@@ -1,0 +1,18 @@
+{
+  "name": "mario-headless-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx runner.ts"
+  },
+  "dependencies": {
+    "matter-js": "^0.20.0"
+  },
+  "devDependencies": {
+    "@types/matter-js": "^0.20.2",
+    "@types/node": "^25.8.0",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}
