@@ -38,7 +38,7 @@ class RewardConfig:
     max_steps: int = 2400
     stuck_window: int = 600
     progress_reward_scale: float = 30.0
-    forward_velocity_scale: float = 0.0005
+    forward_displacement_bonus: float = 0.0005
     jump_completion_bonus: float = 0.5
     checkpoint_bonus: float = 5.0
     time_penalty: float = 0.001

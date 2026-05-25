@@ -10,7 +10,6 @@ import numpy as np
 import torch
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecMonitor
 
 SRC_ROOT = Path(__file__).resolve().parents[1]
@@ -28,11 +27,9 @@ LOG_DIR = ROOT / "logs"
 CKPT_DIR = ROOT / "checkpoints"
 
 
-def make_env(rank: int):
+def make_env():
     def _init():
-        env = MarioHeadlessEnv()
-        env = Monitor(env)
-        return env
+        return MarioHeadlessEnv()
     return _init
 
 
@@ -83,7 +80,7 @@ def main():
     ap.add_argument("--ent-coef", type=float, default=0.01)
     ap.add_argument("--clip-range", type=float, default=0.2)
     ap.add_argument("--n-epochs", type=int, default=4)
-    ap.add_argument("--device", default="auto")
+    ap.add_argument("--device", choices=("auto", "cpu", "mps"), default="auto")
     ap.add_argument("--seed", type=int, default=TRAINING_SEED)
     ap.add_argument("--use-subproc", action="store_true", default=True)
     ap.add_argument("--use-dummy", dest="use_subproc", action="store_false")
@@ -97,16 +94,14 @@ def main():
     run_name = args.run_name or f"ppo_{int(time.time())}"
 
     if args.use_subproc and args.n_envs > 1:
-        env = SubprocVecEnv([make_env(i) for i in range(args.n_envs)], start_method="spawn")
+        env = SubprocVecEnv([make_env() for _ in range(args.n_envs)], start_method="spawn")
     else:
-        env = DummyVecEnv([make_env(i) for i in range(args.n_envs)])
+        env = DummyVecEnv([make_env() for _ in range(args.n_envs)])
     env = VecMonitor(env, filename=str(LOG_DIR / f"{run_name}.monitor.csv"))
 
     device = args.device
     if device == "auto":
-        if torch.cuda.is_available():
-            device = "cuda"
-        elif torch.backends.mps.is_available():
+        if torch.backends.mps.is_available():
             device = "mps"
         else:
             device = "cpu"

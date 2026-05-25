@@ -7,7 +7,8 @@
     "start": "tsx runner.ts"
   },
   "dependencies": {
-    "matter-js": "^0.20.0"
+    "matter-js": "^0.20.0",
+    "phaser": "^3.90.0"
   },
   "devDependencies": {
     "@types/matter-js": "^0.20.2",

@@ -11,6 +11,7 @@ from config.config import RewardConfig
 @dataclass
 class RewardState:
     max_x: float = 0.0
+    prev_x: float = 0.0
     frames_since_progress: int = 0
     prev_on_ground: bool = False
     takeoff_x: float = 0.0
@@ -30,6 +31,7 @@ def make_initial_reward_state(obs_raw: dict[str, Any]) -> RewardState:
     player = obs_raw["player"]
     return RewardState(
         max_x=player["x"],
+        prev_x=player["x"],
         prev_on_ground=bool(player.get("onGround", False)),
         takeoff_x=player["x"],
     )
@@ -43,12 +45,11 @@ def compute_reward_step(
     map_w: float,
 ) -> RewardStepResult:
     px = raw["player"]["x"]
-    vx = raw["player"]["vx"]
     on_ground = bool(raw["player"]["onGround"])
 
     reward = -config.time_penalty
-    if vx > 0.0:
-        reward += config.forward_velocity_scale
+    if px > state.prev_x:
+        reward += config.forward_displacement_bonus
 
     release_jump_next_step = False
     if not on_ground and state.prev_on_ground:
@@ -67,6 +68,7 @@ def compute_reward_step(
         state.frames_since_progress = 0
     else:
         state.frames_since_progress += 1
+    state.prev_x = px
 
     for i, checkpoint_x in enumerate(config.progress_checkpoints):
         bit = 1 << i
