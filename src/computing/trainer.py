@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 import time
 from pathlib import Path
@@ -70,7 +69,7 @@ class ProgressCallback(BaseCallback):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--n-envs", type=int, default=8)
+    ap.add_argument("--n-envs", type=int, default=16)
     ap.add_argument("--total-timesteps", type=int, default=200_000)
     ap.add_argument("--n-steps", type=int, default=512)
     ap.add_argument("--batch-size", type=int, default=512)
@@ -121,7 +120,7 @@ def main():
         verbose=1,
         device=device,
         seed=args.seed,
-        tensorboard_log=None if os.environ.get("DISABLE_TENSORBOARD") == "1" else str(LOG_DIR),
+        tensorboard_log=None,
         policy_kwargs=dict(
             features_extractor_class=MarioGridExtractor,
             features_extractor_kwargs=dict(grid_features=128),
@@ -145,7 +144,6 @@ def main():
     model.learn(
         total_timesteps=args.total_timesteps,
         callback=[cb_ckpt, cb_prog, cb_det],
-        tb_log_name=run_name,
     )
 
     final = CKPT_DIR / run_name / "ppo_final.zip"
